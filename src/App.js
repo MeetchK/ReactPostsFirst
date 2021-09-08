@@ -6,7 +6,6 @@ import PostForm from "./components/PostForm";
 import PostFilter from "./components/PostFilter";
 import MyModal from "./components/UI/MyModal/MyModal";
 import {usePosts} from "./components/hooks/usePosts";
-import axios from "axios";
 import PostService from "./API/PostService";
 import Loader from "./components/UI/loader/Loader";
 
@@ -44,7 +43,6 @@ function App() {
 
     return (
         <div className="App">
-            <button onClick={fetchPosts}>GET POSTS</button>
             <MyButton style={{marginTop: 30}} onClick={() => setModal(true)}>
                 Создать пост
             </MyButton>
@@ -60,7 +58,7 @@ function App() {
                 ?
                 <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}><Loader /></div>
                 :
-                <PostList remove={removePost} posts={sortedAndSearchedPosts} title="Список постов 1"/>
+                <PostList remove={removePost} posts={sortedAndSearchedPosts} title="Список постов"/>
             }
 
 
