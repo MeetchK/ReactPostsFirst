@@ -8,36 +8,43 @@ import MyModal from "./components/UI/MyModal/MyModal";
 import {usePosts} from "./components/hooks/usePosts";
 import PostService from "./API/PostService";
 import Loader from "./components/UI/loader/Loader";
+import {useFetching} from "./components/hooks/useFetching";
+import {getPageCount, getPagesArray} from "./utils/pages";
+import Pagination from "./components/UI/pagination/Pagination";
 
 function App() {
     const [posts, setPosts] = useState([])
     const [filter, setFilter] = useState({sort: '', query: ''})
     const [modal, setModal] = useState(false)
+    const [totalPages, setTotalPages] = useState(0)
+    const [limit, setLimit] = useState(10)
+    const [page, setPage] = useState(1)
     const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query)
-    const [isPostLoading, setIsPostLoading] = useState(false)
+
+
+    const [fetchPosts, isPostLoading, postError] = useFetching(async () => {
+        const response = await PostService.getAll(limit, page);
+        setPosts(response.data)
+        const totalCount = response.headers['x-total-count']
+        setTotalPages(getPageCount(totalCount, limit))
+    })
 
     useEffect(() => {
         fetchPosts()
-    }, [])
+    }, [page])
 
     const createPost = (newPost) => {
         setPosts([...posts, newPost])
         setModal(false)
     }
 
-    async function fetchPosts() {
-        setIsPostLoading(true)
-        setTimeout(async () => {
-            const posts = await PostService.getAll();
-            setPosts(posts)
-            setIsPostLoading(false)
-        }, 1000)
-
-    }
-
 
     const removePost = (post) => {
         setPosts(posts.filter(p => p.id !== post.id))
+    }
+
+    const changePage = (page) => {
+        setPage(page)
     }
 
 
@@ -54,14 +61,16 @@ function App() {
                 filter={filter}
                 setFilter={setFilter}
             />
+            {postError &&
+            <h1>Error ${postError}</h1>
+            }
             {isPostLoading
                 ?
-                <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}><Loader /></div>
+                <div style={{display: 'flex', justifyContent: 'center', marginTop: 50}}><Loader/></div>
                 :
                 <PostList remove={removePost} posts={sortedAndSearchedPosts} title="Список постов"/>
             }
-
-
+            <Pagination page={page} changePage={changePage} totalPages={totalPages}/>
         </div>
     );
 }
